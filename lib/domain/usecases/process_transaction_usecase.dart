@@ -1,3 +1,4 @@
+import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:finance_app/domain/entities/account.dart';
@@ -24,7 +25,8 @@ class ProcessTransactionParams extends Equatable {
   });
 
   @override
-  List<Object?> get props => [accountId, amount, description, category, type, date];
+  List<Object?> get props =>
+      [accountId, amount, description, category, type, date];
 }
 
 class ProcessTransactionResult extends Equatable {
@@ -41,7 +43,8 @@ class ProcessTransactionResult extends Equatable {
   });
 
   @override
-  List<Object?> get props => [transaction, updatedBalance, success, errorMessage];
+  List<Object?> get props =>
+      [transaction, updatedBalance, success, errorMessage];
 }
 
 class ProcessTransactionUseCase {
@@ -54,7 +57,33 @@ class ProcessTransactionUseCase {
   })  : _transactionRepository = transactionRepository,
         _accountRepository = accountRepository;
 
-  Future<ProcessTransactionResult> execute(ProcessTransactionParams params) async {
+  /// Última operación en curso por cuenta. Permite procesar de a una las
+  /// transacciones de una misma cuenta, evitando que dos ejecuciones
+  /// simultáneas lean el mismo balance y una pise la actualización de la otra.
+  final Map<String, Future<void>> _accountLocks = {};
+
+  /// Procesa la transacción. Las llamadas sobre la misma cuenta se ejecutan en
+  /// orden de llegada; las de cuentas distintas siguen siendo concurrentes.
+  Future<ProcessTransactionResult> execute(
+      ProcessTransactionParams params) async {
+    final accountId = params.accountId;
+    final previous = _accountLocks[accountId] ?? Future<void>.value();
+    final current = Completer<void>();
+    _accountLocks[accountId] = current.future;
+
+    await previous;
+    try {
+      return await _process(params);
+    } finally {
+      current.complete();
+      if (identical(_accountLocks[accountId], current.future)) {
+        _accountLocks.remove(accountId);
+      }
+    }
+  }
+
+  Future<ProcessTransactionResult> _process(
+      ProcessTransactionParams params) async {
     if (params.amount <= 0) {
       return ProcessTransactionResult(
         transaction: _createFailedTransaction(params),
@@ -90,18 +119,21 @@ class ProcessTransactionUseCase {
       );
     }
 
-    final currentBalance = await _transactionRepository.getLatestBalance(params.accountId);
-    final balanceToCheck = currentBalance ?? Balance(
-      id: 'initial_${params.accountId}',
-      accountId: params.accountId,
-      currentBalance: account.initialBalance,
-      date: DateTime.now(),
-      income: 0,
-      expenses: 0,
-      currency: account.currency,
-    );
+    final currentBalance =
+        await _transactionRepository.getLatestBalance(params.accountId);
+    final balanceToCheck = currentBalance ??
+        Balance(
+          id: 'initial_${params.accountId}',
+          accountId: params.accountId,
+          currentBalance: account.initialBalance,
+          date: DateTime.now(),
+          income: 0,
+          expenses: 0,
+          currency: account.currency,
+        );
 
-    if (params.type == TransactionType.expense && !balanceToCheck.canAfford(params.amount)) {
+    if (params.type == TransactionType.expense &&
+        !balanceToCheck.canAfford(params.amount)) {
       return ProcessTransactionResult(
         transaction: _createFailedTransaction(params),
         updatedBalance: balanceToCheck,
@@ -112,7 +144,8 @@ class ProcessTransactionUseCase {
 
     final transactionId = _generateTransactionId();
     final now = params.date ?? DateTime.now();
-    final newBalance = balanceToCheck.applyTransaction(params.amount, params.type);
+    final newBalance =
+        balanceToCheck.applyTransaction(params.amount, params.type);
 
     final transaction = Transaction(
       id: transactionId,
