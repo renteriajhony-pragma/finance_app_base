@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:finance_app/presentation/viewmodels/finance_viewmodel.dart';
@@ -82,11 +81,13 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 16),
               TextField(
                 controller: amountController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 decoration: InputDecoration(
                   labelText: 'Monto',
                   prefixText: isIncome ? '+ ' : '- ',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   filled: true,
                   fillColor: Colors.grey[50],
                 ),
@@ -96,7 +97,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 controller: descriptionController,
                 decoration: InputDecoration(
                   labelText: 'Descripción',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   filled: true,
                   fillColor: Colors.grey[50],
                 ),
@@ -106,14 +108,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 value: selectedCategory,
                 decoration: InputDecoration(
                   labelText: 'Categoría',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   filled: true,
                   fillColor: Colors.grey[50],
                 ),
-                items: ['Alimentación', 'Transporte', 'Entretenimiento', 'Servicios', 'Otros']
-                    .map((cat) => DropdownMenuItem(value: cat, child: Text(cat)))
+                items: [
+                  'Alimentación',
+                  'Transporte',
+                  'Entretenimiento',
+                  'Servicios',
+                  'Otros'
+                ]
+                    .map(
+                        (cat) => DropdownMenuItem(value: cat, child: Text(cat)))
                     .toList(),
-                onChanged: (value) => setModalState(() => selectedCategory = value!),
+                onChanged: (value) =>
+                    setModalState(() => selectedCategory = value!),
               ),
               const SizedBox(height: 24),
               SizedBox(
@@ -137,9 +148,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).primaryColor,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('Agregar Transacción', style: TextStyle(fontSize: 16)),
+                  child: const Text('Agregar Transacción',
+                      style: TextStyle(fontSize: 16)),
                 ),
               ),
               const SizedBox(height: 20),
@@ -236,16 +249,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.receipt_long, size: 80, color: Colors.grey[400]),
+                          Icon(Icons.receipt_long,
+                              size: 80, color: Colors.grey[400]),
                           const SizedBox(height: 16),
                           Text(
                             'No hay transacciones aún',
-                            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                            style: TextStyle(
+                                fontSize: 16, color: Colors.grey[600]),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             'Toca el botón + para agregar tu primera transacción',
-                            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                            style: TextStyle(
+                                fontSize: 14, color: Colors.grey[500]),
                           ),
                         ],
                       ),
@@ -254,7 +270,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 else
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    sliver: TransactionList(
+                    sliver: SliverTransactionList(
                       transactions: viewModel.transactions,
                       onTransactionTap: (transaction) {
                         Navigator.push(

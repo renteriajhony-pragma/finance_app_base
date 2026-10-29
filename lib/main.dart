@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
 import 'domain/repositories/transaction_repository.dart';
@@ -11,6 +10,7 @@ import 'domain/usecases/notify_transaction_usecase.dart';
 import 'data/repositories/transaction_repository_impl.dart';
 import 'data/repositories/account_repository_impl.dart';
 import 'data/datasources/local_transaction_datasource.dart';
+import 'data/datasources/mock_remote_account_datasource.dart';
 import 'data/datasources/remote_account_datasource.dart';
 import 'data/services/local_push_notification_service.dart';
 import 'presentation/viewmodels/finance_viewmodel.dart';
@@ -24,7 +24,7 @@ void setupDependencies() {
     () => LocalTransactionDataSourceImpl(),
   );
   getIt.registerLazySingleton<RemoteAccountDataSource>(
-    () => RemoteAccountDataSourceImpl(httpClient: http.Client()),
+    () => MockRemoteAccountDataSource(),
   );
 
   // Repositories

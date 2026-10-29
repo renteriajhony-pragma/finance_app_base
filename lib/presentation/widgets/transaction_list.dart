@@ -99,6 +99,34 @@ class TransactionList extends StatelessWidget {
   }
 }
 
+
+class SliverTransactionList extends StatelessWidget {
+  final List<Transaction> transactions;
+  final Function(Transaction)? onTransactionTap;
+
+  const SliverTransactionList({
+    super.key,
+    required this.transactions,
+    this.onTransactionTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverList.builder(
+      itemCount: transactions.length,
+      itemBuilder: (context, index) {
+        final transaction = transactions[index];
+        return _TransactionListItem(
+          transaction: transaction,
+          onTap: onTransactionTap != null
+              ? () => onTransactionTap!(transaction)
+              : null,
+        );
+      },
+    );
+  }
+}
+
 class _TransactionListItem extends StatelessWidget {
   final Transaction transaction;
   final VoidCallback? onTap;

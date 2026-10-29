@@ -1,6 +1,7 @@
 
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as path_helper;
+import 'package:finance_app/data/datasources/finance_seed_data.dart';
 import 'package:finance_app/data/models/transaction_model.dart';
 
 abstract class LocalTransactionDataSource {
@@ -24,7 +25,7 @@ abstract class LocalTransactionDataSource {
 class LocalTransactionDataSourceImpl implements LocalTransactionDataSource {
   Database? _database;
   static const String _databaseName = 'finance_app.db';
-  static const int _databaseVersion = 1;
+  static const int _databaseVersion = 2;
   static const String _tableTransactions = 'transactions';
 
   LocalTransactionDataSourceImpl();
@@ -77,12 +78,31 @@ class LocalTransactionDataSourceImpl implements LocalTransactionDataSource {
     await db.execute('''
       CREATE INDEX idx_transactions_category ON $_tableTransactions (category)
     ''');
+
+    await _seedTransactions(db);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < newVersion) {
-      // Migraciones futuras aquí
+    if (oldVersion < 2) {
+      final count = Sqflite.firstIntValue(
+        await db.rawQuery('SELECT COUNT(*) FROM $_tableTransactions'),
+      );
+      if (count == 0) {
+        await _seedTransactions(db);
+      }
     }
+  }
+
+  Future<void> _seedTransactions(Database db) async {
+    final batch = db.batch();
+    for (final transaction in FinanceSeedData.transactions(DateTime.now())) {
+      batch.insert(
+        _tableTransactions,
+        _transactionModelToMap(transaction),
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      );
+    }
+    await batch.commit(noResult: true);
   }
 
   @override
