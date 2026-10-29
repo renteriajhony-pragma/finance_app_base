@@ -64,7 +64,8 @@ void main() {
 
   group('ProcessTransactionUseCase', () {
     test('Procesa transacción de crédito exitosamente', () async {
-      // Given (Arrange): cuenta con 1000 y repositorio que persiste sin errores
+      // Dado (Arrange): una cuenta con saldo de 1000 y un repositorio que
+      // guarda la información sin errores
       givenAccountWithInitialBalance(1000);
       when(mockTransactionRepository.saveTransaction(any)).thenAnswer(
           (invocation) async =>
@@ -72,12 +73,12 @@ void main() {
       when(mockTransactionRepository.updateBalance(any))
           .thenAnswer((_) async {});
 
-      // When (Act): se procesa un ingreso de 200
+      // Cuando (Act): se procesa un ingreso de 200
       final result = await useCase.execute(
         buildParams(amount: 200, type: TransactionType.income),
       );
 
-      // Then (Assert): la operación es exitosa y el saldo sube a 1200
+      // Entonces (Assert): la operación es exitosa y el saldo sube a 1200
       expect(result.success, isTrue);
       expect(result.errorMessage, isNull);
       expect(result.transaction.status, TransactionStatus.completed);
@@ -90,15 +91,16 @@ void main() {
     });
 
     test('Rechaza transacción de débito por saldo insuficiente', () async {
-      // Given (Arrange): cuenta con solo 100 de saldo
+      // Dado (Arrange): una cuenta con un saldo de solo 100
       givenAccountWithInitialBalance(100);
 
-      // When (Act): se intenta procesar un gasto de 500
+      // Cuando (Act): se intenta procesar un gasto de 500
       final result = await useCase.execute(
         buildParams(amount: 500, type: TransactionType.expense),
       );
 
-      // Then (Assert): se rechaza, el saldo no cambia y no se persiste nada
+      // Entonces (Assert): la operación se rechaza, el saldo no cambia y no se
+      // guarda nada
       expect(result.success, isFalse);
       expect(result.errorMessage,
           'Saldo insuficiente para realizar esta transacción');
@@ -109,18 +111,19 @@ void main() {
     });
 
     test('Maneja error de red durante procesamiento', () async {
-      // Given (Arrange): cuenta con saldo suficiente y un repositorio que
-      // falla por falta de conexión al guardar
+      // Dado (Arrange): una cuenta con saldo suficiente y un repositorio que
+      // falla por falta de conexión al guardar la transacción
       givenAccountWithInitialBalance(1000);
       when(mockTransactionRepository.saveTransaction(any))
           .thenAnswer((_) async => throw const SocketException('Sin conexión'));
 
-      // When (Act): se procesa un ingreso de 200
+      // Cuando (Act): se procesa un ingreso de 200
       final result = await useCase.execute(
         buildParams(amount: 200, type: TransactionType.income),
       );
 
-      // Then (Assert): el error se captura y se informa sin lanzar excepción
+      // Entonces (Assert): el error se captura y se informa en el resultado,
+      // sin lanzar excepción
       expect(result.success, isFalse);
       expect(result.errorMessage, contains('Error al procesar la transacción'));
       expect(result.errorMessage, contains('Sin conexión'));
@@ -128,8 +131,8 @@ void main() {
     });
 
     test('Marca transacción como fallida en caso de error', () async {
-      // Given (Arrange): la transacción se guarda pero falla la actualización
-      // del balance
+      // Dado (Arrange): un repositorio que guarda la transacción pero falla al
+      // actualizar el balance
       givenAccountWithInitialBalance(1000);
       when(mockTransactionRepository.saveTransaction(any)).thenAnswer(
           (invocation) async =>
@@ -137,12 +140,12 @@ void main() {
       when(mockTransactionRepository.updateBalance(any))
           .thenAnswer((_) async => throw Exception('Fallo al actualizar'));
 
-      // When (Act): se procesa un ingreso de 200
+      // Cuando (Act): se procesa un ingreso de 200
       final result = await useCase.execute(
         buildParams(amount: 200, type: TransactionType.income),
       );
 
-      // Then (Assert): la transacción queda en estado fallido y el balance
+      // Entonces (Assert): la transacción queda en estado fallido y el balance
       // devuelto es el original, sin el ingreso aplicado
       expect(result.success, isFalse);
       expect(result.transaction.status, TransactionStatus.failed);
