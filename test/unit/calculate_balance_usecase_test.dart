@@ -59,7 +59,8 @@ void main() {
   group('CalculateBalanceUseCase', () {
     test('Calcula saldo correctamente para cuenta con transacciones positivas',
         () async {
-      // Given (Arrange): una cuenta con saldo inicial 1000 y dos ingresos completados
+      // Dado (Arrange): una cuenta con saldo inicial de 1000 y dos ingresos
+      // completados, de 500 y de 250
       when(mockAccountRepository.getAccountById(accountId))
           .thenAnswer((_) async => buildAccount(initialBalance: 1000));
       when(mockTransactionRepository.getTransactionsByAccount(accountId))
@@ -72,10 +73,10 @@ void main() {
       when(mockTransactionRepository.getPendingTransactions(accountId))
           .thenAnswer((_) async => []);
 
-      // When (Act): se calcula el balance de la cuenta
+      // Cuando (Act): se calcula el balance de la cuenta
       final balance = await useCase.execute(accountId);
 
-      // Then (Assert): el saldo suma los ingresos y no hay gastos
+      // Entonces (Assert): el saldo suma los ingresos (1750) y no hay gastos
       expect(balance.accountId, accountId);
       expect(balance.currentBalance, 1750);
       expect(balance.income, 750);
@@ -87,7 +88,7 @@ void main() {
     });
 
     test('Maneja cuenta sin transacciones correctamente', () async {
-      // Given (Arrange): una cuenta con saldo inicial 500 y sin movimientos
+      // Dado (Arrange): una cuenta con saldo inicial de 500 y sin movimientos
       when(mockAccountRepository.getAccountById(accountId))
           .thenAnswer((_) async => buildAccount(initialBalance: 500));
       when(mockTransactionRepository.getTransactionsByAccount(accountId))
@@ -95,18 +96,19 @@ void main() {
       when(mockTransactionRepository.getPendingTransactions(accountId))
           .thenAnswer((_) async => []);
 
-      // When (Act): se calcula el balance de la cuenta
+      // Cuando (Act): se calcula el balance de la cuenta
       final balance = await useCase.execute(accountId);
 
-      // Then (Assert): el saldo es igual al inicial y los acumulados son cero
+      // Entonces (Assert): el saldo es igual al inicial y los ingresos y gastos
+      // acumulados son cero
       expect(balance.currentBalance, 500);
       expect(balance.income, 0);
       expect(balance.expenses, 0);
     });
 
     test('Calcula saldo con transacciones de ambos tipos', () async {
-      // Given (Arrange): ingreso y gasto completados, y un gasto pendiente
-      // que no debe afectar el saldo
+      // Dado (Arrange): una cuenta con un ingreso y un gasto completados, y un
+      // gasto pendiente que no debe afectar el saldo
       when(mockAccountRepository.getAccountById(accountId))
           .thenAnswer((_) async => buildAccount(initialBalance: 1000));
       final pendingExpense = buildTransaction(
@@ -126,10 +128,11 @@ void main() {
       when(mockTransactionRepository.getPendingTransactions(accountId))
           .thenAnswer((_) async => [pendingExpense]);
 
-      // When (Act): se calcula el balance de la cuenta
+      // Cuando (Act): se calcula el balance de la cuenta
       final balance = await useCase.execute(accountId);
 
-      // Then (Assert): 1000 + 2000 - 300 = 2700, ignorando la transacción pendiente
+      // Entonces (Assert): el saldo es 2700 (1000 + 2000 - 300) y se ignora la
+      // transacción pendiente
       expect(balance.currentBalance, 2700);
       expect(balance.income, 2000);
       expect(balance.expenses, 300);
