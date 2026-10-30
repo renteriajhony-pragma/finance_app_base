@@ -40,7 +40,7 @@ class CalculateBalanceUseCase extends Equatable {
     }
 
     final currentBalance = account.initialBalance + totalIncome - totalExpenses;
-    final pendingAmount = pendingTransactions.fold<double>(
+    pendingTransactions.fold<double>(
       0.0,
       (sum, tx) => sum + tx.calculateBalanceImpact(),
     );
