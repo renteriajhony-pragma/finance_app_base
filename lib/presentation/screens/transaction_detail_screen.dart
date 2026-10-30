@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:finance_app/domain/entities/transaction.dart';
@@ -10,7 +9,8 @@ class TransactionDetailScreen extends StatefulWidget {
   const TransactionDetailScreen({super.key, required this.transaction});
 
   @override
-  State<TransactionDetailScreen> createState() => _TransactionDetailScreenState();
+  State<TransactionDetailScreen> createState() =>
+      _TransactionDetailScreenState();
 }
 
 class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
@@ -47,16 +47,28 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
 
   String _formatDate(DateTime date) {
     final months = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre'
     ];
     return '${date.day} de ${months[date.month - 1]} de ${date.year}';
   }
 
   void _showEditDialog() {
     final viewModel = context.read<FinanceViewModel>();
-    final descriptionController = TextEditingController(text: _transaction.description);
-    final amountController = TextEditingController(text: _transaction.amount.toString());
+    final descriptionController =
+        TextEditingController(text: _transaction.description);
+    final amountController =
+        TextEditingController(text: _transaction.amount.toString());
 
     showDialog(
       context: context,
@@ -67,7 +79,8 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
           children: [
             TextField(
               controller: amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(
                 labelText: 'Monto',
                 border: OutlineInputBorder(),
@@ -129,7 +142,9 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
-              await context.read<FinanceViewModel>().deleteTransaction(_transaction.id);
+              await context
+                  .read<FinanceViewModel>()
+                  .deleteTransaction(_transaction.id);
               if (context.mounted) {
                 Navigator.pop(context);
                 Navigator.pop(context);
@@ -185,7 +200,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -205,13 +220,16 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                   ),
                   const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: typeColor.withOpacity(0.2),
+                      color: typeColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      _transaction.type == TransactionType.income ? 'INGRESO' : 'GASTO',
+                      _transaction.type == TransactionType.income
+                          ? 'INGRESO'
+                          : 'GASTO',
                       style: TextStyle(
                         color: typeColor,
                         fontWeight: FontWeight.bold,
@@ -226,7 +244,8 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
               padding: const EdgeInsets.all(20),
               child: Card(
                 elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
@@ -253,9 +272,10 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                       _buildDetailRow(
                         icon: Icons.info_outline,
                         label: 'Estado',
-                        value: _transaction.status == TransactionStatus.completed
-                            ? 'Completada'
-                            : 'Pendiente',
+                        value:
+                            _transaction.status == TransactionStatus.completed
+                                ? 'Completada'
+                                : 'Pendiente',
                       ),
                       const Divider(height: 32),
                       _buildDetailRow(
@@ -273,7 +293,8 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Card(
                 elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
@@ -281,7 +302,8 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                     children: [
                       const Text(
                         'Impacto en el Balance',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -291,7 +313,8 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                           Text(
                             isIncome
                                 ? '+${_formatCurrency(_transaction.calculateBalanceImpact())}'
-                                : _formatCurrency(_transaction.calculateBalanceImpact()),
+                                : _formatCurrency(
+                                    _transaction.calculateBalanceImpact()),
                             style: TextStyle(
                               color: typeColor,
                               fontWeight: FontWeight.bold,
